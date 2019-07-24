@@ -4,6 +4,7 @@ import os
 import shutil
 import subprocess
 import sys
+import time
 import random
 
 import itertools
@@ -17,9 +18,9 @@ if clang_res.returncode != 0:
 
 lldb = sys.argv[1]
 
-def make_repro(seed):
+def make_repro(seed, time):
   print("Crashed, creating reproducer...")
-  repro_folder = "repro-" + str(seed) + "/"
+  repro_folder = "repro-" + hex(seed)[2:] + "/"
   os.makedirs(repro_folder)
   shutil.copyfile("test.cpp", repro_folder + "test.cpp")
   pp_res = subprocess.run(["clang++", "-g", "-std=c++11", "test.cpp",
@@ -55,7 +56,8 @@ grep -Fxq "Assertion failed:" err.log
                             "test_pp.cpp"])
   if git_res.returncode != 0:
     return
-  git_res = subprocess.run(["git", "-C", repro_folder, "-am", "Init"])
+
+  git_res = subprocess.run(["git", "-C", repro_folder, "commit", "-m", "Init"])
   if git_res.returncode != 0:
     return
   print("Created reproducer")
@@ -65,6 +67,7 @@ grep -Fxq "Assertion failed:" err.log
 while True:
   seed = random.randint(0, 9999999999)
   timed_out = False
+  start = time.time()
   try:
     lldb_res = subprocess.run([lldb, "./tt", "-o",
                                "command script import fuzz.py", "-o",
@@ -73,6 +76,7 @@ while True:
   except subprocess.TimeoutExpired:
     print("Seed caused timeout: " + str(seed))
     timed_out = True
+  end = time.time()
 
   sys.stdout.write('\b')            # erase the last written char
   sys.stdout.write(next(spinner))  # write the next character
@@ -80,4 +84,4 @@ while True:
 
   if lldb_res.returncode < 0 or timed_out:
     print("")
-    make_repro(seed)
+    make_repro(seed, str(int(end - start)))
