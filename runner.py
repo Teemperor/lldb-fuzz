@@ -75,9 +75,10 @@ grep -Fq "Assertion failed:" err.log
     return
   print("Created reproducer")
 
-  git_res = subprocess.run(["bash", repro_folder + "creduce.sh"])
-  if git_res.returncode != 0:
-    return
+  if False: #Disable automatically running creduce for now.
+    git_res = subprocess.run(["bash", repro_folder + "creduce.sh"])
+    if git_res.returncode != 0:
+      return
 
 run_env = os.environ.copy()
 run_env["LLDB_UNDER_CREDUCE"] = "1"
