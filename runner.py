@@ -42,11 +42,11 @@ $1 ./tt -o "command script import fuzz.py" -o "fuzz """ + str(seed) + """"
 #!/bin/bash
 set -e
 cd "$(dirname "$0")"
-chmod +x test.sh
 creduce ./test.sh test_pp.cpp --n 1 --timeout 30
 """
   with open(repro_folder + "creduce.sh", "w") as f:
     f.write(creduce_script)
+  os.chmod(repro_folder + "creduce.sh", 0o775)
 
   test_script = ("""#!/bin/bash
 set -e
@@ -59,6 +59,7 @@ grep -Fq "Assertion failed:" err.log
 """)
   with open(repro_folder + "test.sh", "w") as f:
     f.write(test_script)
+  os.chmod(repro_folder + "test.sh", 0o775)
 
   print("Creating git repo")
   git_res = subprocess.run(["git", "-C", repro_folder, "init"], stdout=subprocess.DEVNULL)
@@ -66,7 +67,7 @@ grep -Fq "Assertion failed:" err.log
     return
   git_res = subprocess.run(["git", "-C", repro_folder, "add",
                             "test.cpp", "test.sh", "repro.sh", "fuzz.py",
-                            "test_pp.cpp"], stdout=subprocess.DEVNULL)
+                            "test_pp.cpp", "creduce.sh"], stdout=subprocess.DEVNULL)
   if git_res.returncode != 0:
     return
 
