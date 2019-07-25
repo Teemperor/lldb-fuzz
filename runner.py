@@ -95,7 +95,6 @@ def pick_test_cpp():
     print("Using " + str(max_test_suffix) + " test files")
   rand_i = random.randrange(max_test_suffix)
   rand_test = "test" + str(rand_i) + ".cpp"
-  print("\n" + rand_test + " " + str(max_test_suffix))
   shutil.copyfile(rand_test, "test.cpp")
   return rand_test
 
