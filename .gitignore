@@ -2,3 +2,4 @@ repro-*
 tt*
 __pycache__
 test.cpp
+reduced-repro-*

@@ -28,7 +28,7 @@ def make_repro(seed, time):
 #!/bin/bash
 set -e
 clang++ -g -std=c++11 test_pp.cpp -o tt
-$1 ./tt -o "command script import fuzz.py" -o "fuzz """ + str(seed) + """"
+$1 ./tt -o "command script import fuzz.py" -o "fuzz """ + str(seed) + """" -o q
 """
   with open(repro_folder + "repro.sh", "w") as f:
     f.write(repro_script)
@@ -37,7 +37,7 @@ $1 ./tt -o "command script import fuzz.py" -o "fuzz """ + str(seed) + """"
 #!/bin/bash
 set -e
 cd "$(dirname "$0")"
-creduce ./test.sh test_pp.cpp --n 1 --timeout 30
+creduce ./test.sh test_pp.cpp --timeout 30
 """
   with open(repro_folder + "creduce.sh", "w") as f:
     f.write(creduce_script)
@@ -49,7 +49,7 @@ clang++ -g -std=c++11 test_pp.cpp -o tt
 set +e
 rm -f err.log
 { export LLDB_UNDER_CREDUCE=1 ; """ + lldb + """ ./tt -o "command script import """ + repro_folder_full_path + """/fuzz.py" -o "fuzz """ + str(seed) +
-"""" ; } 2>err.log >std.log
+"""" -o q ; } 2>err.log >std.log
 grep -Fq "Assertion failed:" err.log
 """)
   with open(repro_folder + "test.sh", "w") as f:
