@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import glob
 import os
 import shutil
 import subprocess
@@ -9,12 +10,6 @@ import random
 
 import itertools
 spinner = itertools.cycle(['-', '/', '|', '\\'])
-
-clang_res = subprocess.run(["clang++", "-g", "-std=c++11", "test.cpp", "-o", "tt"])
-
-if clang_res.returncode != 0:
-  print("Error: Clang failed")
-  exit(1)
 
 lldb = sys.argv[1]
 
@@ -84,8 +79,36 @@ grep -Fq "Assertion failed:" err.log
 run_env = os.environ.copy()
 run_env["LLDB_UNDER_CREDUCE"] = "1"
 
+max_test_suffix = None
+
+def calc_max_test_suffix():
+  files = [f for f in glob.glob("test*.cpp")]
+  files.sort()
+  files.remove("test.cpp")
+  # Let's do the stupid thing.Pleas
+  for i in range(0, 99999):
+    if not ("test" + str(i) + ".cpp") == files[0]:
+      return i
+  print("Couldn't find max test suffix?")
+  exit(1)
+
+def pick_test_cpp():
+  global max_test_suffix
+  if max_test_suffix is None:
+    max_test_suffix = calc_max_test_suffix()
+  rand_i = random.randrange(max_test_suffix)
+  rand_test = "test" + str(rand_i) + ".cpp"
+  shutil.copyfile(rand_test, "test.cpp")
+  return rand_test
 
 while True:
+  test_cpp = pick_test_cpp()
+
+  clang_res = subprocess.run(["clang++", "-g", "-std=c++11", "test.cpp", "-o", "tt"])
+
+  if clang_res.returncode != 0:
+    print("Error: Compiling " + test_cpp + ". Skipping")
+
   seed = random.randint(0, 9999999999)
   timed_out = False
   start = time.time()
@@ -102,7 +125,7 @@ while True:
   end = time.time()
 
   sys.stdout.write('\b')            # erase the last written char
-  sys.stdout.write(next(spinner))  # write the next character
+  sys.stdout.write(next(spinner))   # write the next character
   sys.stdout.flush()                # flush stdout buffer (actual character display)
 
   if lldb_res.returncode < 0 or timed_out:
