@@ -84,20 +84,18 @@ max_test_suffix = None
 def calc_max_test_suffix():
   files = [f for f in glob.glob("test*.cpp")]
   files.sort()
-  files.remove("test.cpp")
-  # Let's do the stupid thing.Pleas
-  for i in range(0, 99999):
-    if not ("test" + str(i) + ".cpp") == files[0]:
-      return i
-  print("Couldn't find max test suffix?")
-  exit(1)
+  if "test.cpp" in files:
+    files.remove("test.cpp")
+  return len(files)
 
 def pick_test_cpp():
   global max_test_suffix
   if max_test_suffix is None:
     max_test_suffix = calc_max_test_suffix()
+    print("Using " + str(max_test_suffix) + " test files")
   rand_i = random.randrange(max_test_suffix)
   rand_test = "test" + str(rand_i) + ".cpp"
+  print("\n" + rand_test + " " + str(max_test_suffix))
   shutil.copyfile(rand_test, "test.cpp")
   return rand_test
 
