@@ -37,6 +37,11 @@ class StepAndPrint:
         for i in range(0, fuzz_rand.randrange(300) + 5):
           debugger.HandleCommand("s")
 
+
+        if fuzz_rand.randrange(10) <= 1:
+          res = lldb.SBCommandReturnObject()
+          interp.HandleCommand("bt", res)
+
         cmd = "expr "
         for k in range(3, fuzz_rand.randrange(10)):
           interp = debugger.GetCommandInterpreter()
