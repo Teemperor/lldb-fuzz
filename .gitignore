@@ -3,3 +3,4 @@ tt*
 __pycache__
 test.cpp
 reduced-repro-*
+.DS_Store
